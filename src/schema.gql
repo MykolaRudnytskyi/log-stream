@@ -3,5 +3,36 @@
 # ------------------------------------------------------
 
 type Query {
-  helloWorld: String!
+  helloWorld(level: LogSeverity!): String!
+}
+
+enum LogSeverity {
+  """The log entry has no assigned severity level."""
+  DEFAULT
+
+  """Debug or trace information."""
+  DEBUG
+
+  """Routine information, such as ongoing status or performance."""
+  INFO
+
+  """
+  Normal but significant events, such as start up, shut down, or a configuration change.
+  """
+  NOTICE
+
+  """Warning events might cause problems."""
+  WARNING
+
+  """Error events are likely to cause problems."""
+  ERROR
+
+  """Critical events cause more severe problems or outages."""
+  CRITICAL
+
+  """A person must take an action immediately."""
+  ALERT
+
+  """One or more systems are unusable."""
+  EMERGENCY
 }
