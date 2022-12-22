@@ -5,11 +5,11 @@ enum Events {
   PROCESS = 'process',
 }
 
-export class Queue extends EventEmitter {
+export class Queue {
+  private ee = new EventEmitter()
   private queue: Item[] = []
 
-  constructor(...args: ConstructorParameters<typeof EventEmitter>) {
-    super(...args)
+  constructor() {
     this.spawnNewItemListener()
   }
 
@@ -28,20 +28,20 @@ export class Queue extends EventEmitter {
     }
   }
 
-  private spawnNewItemListener(): void {
-    this.once(Events.PROCESS, async () => {
+  private spawnNewItemListener() {
+    this.ee.once(Events.PROCESS, async () => {
       await this.processRecurrently()
       this.spawnNewItemListener()
     })
   }
 
-  static wrapToItem<T>(action: Item<T>['action']): Item<T> {
+  static wrapToItem<T>(action: Item<T>['action']) {
     return new Item<T>(action)
   }
 
   push(item: Item) {
     this.queue.push(item)
-    this.emit(Events.PROCESS)
+    this.ee.emit(Events.PROCESS)
   }
 
   pushAndWait<T>(item: Item<T>) {
@@ -49,7 +49,7 @@ export class Queue extends EventEmitter {
     return new Promise<Result>((resolve, reject) => {
       item.executor = { resolve, reject }
       this.queue.push(item)
-      this.emit(Events.PROCESS)
+      this.ee.emit(Events.PROCESS)
     })
   }
 }
