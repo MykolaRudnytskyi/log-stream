@@ -35,8 +35,8 @@ export class Queue extends EventEmitter {
     })
   }
 
-  static wrapToItem<T>(action: Item<T>['action']) {
-    return new Item(action)
+  static wrapToItem<T>(action: Item<T>['action']): Item<T> {
+    return new Item<T>(action)
   }
 
   push(item: Item) {
@@ -44,12 +44,9 @@ export class Queue extends EventEmitter {
     this.emit(Events.PROCESS)
   }
 
-  _pushAndWait(item: Item): ReturnType<typeof item['action']> {
-    return item.action()
-  }
-
-  pushAndWait(item: Item) {
-    return new Promise<Awaited<ReturnType<typeof item['action']>>>((resolve, reject) => {
+  pushAndWait<T>(item: Item<T>) {
+    type Result = Awaited<ReturnType<typeof item['action']>>
+    return new Promise<Result>((resolve, reject) => {
       item.executor = { resolve, reject }
       this.queue.push(item)
       this.emit(Events.PROCESS)
