@@ -1,55 +1,68 @@
 import { EventEmitter } from 'events'
-import { Item } from './item'
+import { Task } from './task'
 
 enum Events {
-  PROCESS = 'process',
+  TRIGGER_PROCESSING = 'TRIGGER_PROCESSING',
 }
 
 export class Queue {
   private ee = new EventEmitter()
-  private queue: Item[] = []
+  private queue: Task[] = []
 
   constructor() {
-    this.spawnNewItemListener()
+    this.addTriggerProcessingListener()
   }
 
-  private async processRecurrently(): Promise<void> {
-    const item = this.queue.shift()
+  private async processTasksRecurrently(): Promise<void> {
+    const task = this.queue.shift()
 
-    if (item) {
+    if (task) {
       try {
-        const res: unknown = await item.action()
-        item.executor?.resolve?.(res)
+        const res = await task.action()
+        task.executor?.resolve?.(res)
       } catch (e) {
-        item.executor?.reject?.(e)
+        task.executor?.reject?.(e)
       }
 
-      return this.processRecurrently()
+      return this.processTasksRecurrently()
     }
   }
 
-  private spawnNewItemListener() {
-    this.ee.once(Events.PROCESS, async () => {
-      await this.processRecurrently()
-      this.spawnNewItemListener()
+  /**
+   * @description
+   * This method adds a TRIGGER_PROCESSING listener to the event emitter what will be executed only once.
+   * The execution ilself will trigger processing for all tasks in the queue and after processing all
+   * of them - listener for TRIGGER_PROCESSING event will be added again.
+   * During processing new tasks could be added to the queue asynchronously.
+   */
+  private addTriggerProcessingListener() {
+    this.ee.once(Events.TRIGGER_PROCESSING, async () => {
+      await this.processTasksRecurrently()
+      this.addTriggerProcessingListener()
     })
   }
 
-  static wrapToItem<T>(action: Item<T>['action']) {
-    return new Item<T>(action)
+  static wrapActionIntoTask<T>(action: Task<T>['action']) {
+    return new Task<T>(action)
   }
 
-  push(item: Item) {
-    this.queue.push(item)
-    this.ee.emit(Events.PROCESS)
+  /**
+   * @description Push a task to the queue with will be executed asynchronously in the background
+   */
+  push(task: Task) {
+    this.queue.push(task)
+    this.ee.emit(Events.TRIGGER_PROCESSING)
   }
 
-  pushAndWait<T>(item: Item<T>) {
-    type Result = Awaited<ReturnType<typeof item['action']>>
+  /**
+   * @description Push a task to the queue with will be executed asynchronously and return a result of the execution
+   */
+  pushAndWait<T>(task: Task<T>) {
+    type Result = Awaited<ReturnType<typeof task['action']>>
     return new Promise<Result>((resolve, reject) => {
-      item.executor = { resolve, reject }
-      this.queue.push(item)
-      this.ee.emit(Events.PROCESS)
+      task.executor = { resolve, reject }
+      this.queue.push(task)
+      this.ee.emit(Events.TRIGGER_PROCESSING)
     })
   }
 }

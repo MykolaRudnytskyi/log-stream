@@ -1,4 +1,4 @@
-type ItemCallback<T> = () => Promise<T>
+type TaskCallback<T> = () => Promise<T>
 type Resolve = Parameters<ConstructorParameters<typeof Promise>['0']>['0']
 type Reject = Parameters<ConstructorParameters<typeof Promise>['0']>['1']
 
@@ -7,8 +7,8 @@ interface Executor {
   readonly reject: Reject
 }
 
-export class Item<T = unknown> {
+export class Task<T = unknown> {
   executor?: Executor
 
-  constructor(readonly action: ItemCallback<T>) {}
+  constructor(readonly action: TaskCallback<T>) {}
 }
