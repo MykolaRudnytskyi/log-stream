@@ -28,6 +28,14 @@ describe('CollectorResolver', () => {
     expect(resolver).toBeDefined()
   })
 
+  it('"root" mutation should be defined', () => {
+    expect(resolver.root).toBeDefined()
+  })
+
+  it('"root" mutation should return retult from "CollectorService" directly', () => {
+    expect(resolver.root()).toBe(true)
+  })
+
   it('"collectLog" mutation should be defined', () => {
     expect(resolver.collectLog).toBeDefined()
   })
