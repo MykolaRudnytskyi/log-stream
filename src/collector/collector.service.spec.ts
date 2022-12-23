@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
+import { LogSeverity } from '../common/enums'
 import { createLogFiles } from '../helpers'
 import { CollectorService } from './collector.service'
 
@@ -19,5 +20,13 @@ describe('CollectorService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined()
+  })
+
+  it('"push" method should be defined', () => {
+    expect(service.push).toBeDefined()
+  })
+
+  it('"push" method should return true', () => {
+    expect(service.push({}, LogSeverity.DEFAULT, new Date())).toBeDefined()
   })
 })
