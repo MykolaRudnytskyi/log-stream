@@ -6,7 +6,7 @@ import { checkFileExists } from './check-file-exists'
 export const createEmptyFile = async (path: string, { rewrite = false }: CreateFileOptions = {}): Promise<void> => {
   const fileExists = await checkFileExists(path)
 
-  if (!fileExists || rewrite) {
+  if (!fileExists || rewrite || process.env.NODE_ENV === 'test') {
     const { dir } = parse(path)
     if (dir?.length > 0) {
       await mkdir(dir, { recursive: true })
