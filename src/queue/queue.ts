@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import { Task } from './task'
 
 enum Events {
-  PROCESS = 'process',
+  TRIGGER_PROCESSING = 'TRIGGER_PROCESSING',
 }
 
 export class Queue {
@@ -10,7 +10,7 @@ export class Queue {
   private queue: Task[] = []
 
   constructor() {
-    this.spawnNewTaskListener()
+    this.addTriggerProcessingListener()
   }
 
   private async processTasksRecurrently(): Promise<void> {
@@ -28,10 +28,10 @@ export class Queue {
     }
   }
 
-  private spawnNewTaskListener() {
-    this.ee.once(Events.PROCESS, async () => {
+  private addTriggerProcessingListener() {
+    this.ee.once(Events.TRIGGER_PROCESSING, async () => {
       await this.processTasksRecurrently()
-      this.spawnNewTaskListener()
+      this.addTriggerProcessingListener()
     })
   }
 
@@ -44,7 +44,7 @@ export class Queue {
    */
   push(task: Task) {
     this.queue.push(task)
-    this.ee.emit(Events.PROCESS)
+    this.ee.emit(Events.TRIGGER_PROCESSING)
   }
 
   /**
@@ -55,7 +55,7 @@ export class Queue {
     return new Promise<Result>((resolve, reject) => {
       task.executor = { resolve, reject }
       this.queue.push(task)
-      this.ee.emit(Events.PROCESS)
+      this.ee.emit(Events.TRIGGER_PROCESSING)
     })
   }
 }
