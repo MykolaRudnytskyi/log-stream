@@ -28,6 +28,13 @@ export class Queue {
     }
   }
 
+  /**
+   * @description
+   * This method adds a TRIGGER_PROCESSING listener to the event emitter what will be executed only once.
+   * The execution ilself will trigger processing for all tasks in the queue and after processing all
+   * of them - listener for TRIGGER_PROCESSING event will be added again.
+   * During processing new tasks could be added to the queue asynchronously.
+   */
   private addTriggerProcessingListener() {
     this.ee.once(Events.TRIGGER_PROCESSING, async () => {
       await this.processTasksRecurrently()
@@ -40,7 +47,7 @@ export class Queue {
   }
 
   /**
-   * @description push a task to the queue with will be executed asynchronously in the background
+   * @description Push a task to the queue with will be executed asynchronously in the background
    */
   push(task: Task) {
     this.queue.push(task)
@@ -48,7 +55,7 @@ export class Queue {
   }
 
   /**
-   * @description push a task to the queue with will be executed asynchronously and return a result of the execution
+   * @description Push a task to the queue with will be executed asynchronously and return a result of the execution
    */
   pushAndWait<T>(task: Task<T>) {
     type Result = Awaited<ReturnType<typeof task['action']>>
