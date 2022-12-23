@@ -3,7 +3,20 @@
 # ------------------------------------------------------
 
 type Query {
-  helloWorld(level: LogSeverity!): String!
+  root: Boolean! @deprecated(reason: "to be removed")
+}
+
+type Mutation {
+  collectLog(data: JSONObject!, options: CollctOptionsInput!): Boolean!
+}
+
+"""
+The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSONObject
+
+input CollctOptionsInput {
+  logSeverity: LogSeverity = DEFAULT
 }
 
 enum LogSeverity {
