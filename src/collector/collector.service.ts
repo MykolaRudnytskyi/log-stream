@@ -39,7 +39,7 @@ export class CollectorService {
     const action = async () => {
       writeStream.write(this.getLogRow({ timestamp: date.getTime(), data }))
     }
-    queue.push(Queue.wrapToItem(action))
+    queue.push(Queue.wrapActionIntoTask(action))
     return true
   }
 }

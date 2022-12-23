@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { Item } from './item'
+import { Task } from './task'
 
 enum Events {
   PROCESS = 'process',
@@ -7,54 +7,54 @@ enum Events {
 
 export class Queue {
   private ee = new EventEmitter()
-  private queue: Item[] = []
+  private queue: Task[] = []
 
   constructor() {
-    this.spawnNewItemListener()
+    this.spawnNewTaskListener()
   }
 
-  private async processRecurrently(): Promise<void> {
-    const item = this.queue.shift()
+  private async processTasksRecurrently(): Promise<void> {
+    const task = this.queue.shift()
 
-    if (item) {
+    if (task) {
       try {
-        const res: unknown = await item.action()
-        item.executor?.resolve?.(res)
+        const res = await task.action()
+        task.executor?.resolve?.(res)
       } catch (e) {
-        item.executor?.reject?.(e)
+        task.executor?.reject?.(e)
       }
 
-      return this.processRecurrently()
+      return this.processTasksRecurrently()
     }
   }
 
-  private spawnNewItemListener() {
+  private spawnNewTaskListener() {
     this.ee.once(Events.PROCESS, async () => {
-      await this.processRecurrently()
-      this.spawnNewItemListener()
+      await this.processTasksRecurrently()
+      this.spawnNewTaskListener()
     })
   }
 
-  static wrapToItem<T>(action: Item<T>['action']) {
-    return new Item<T>(action)
+  static wrapActionIntoTask<T>(action: Task<T>['action']) {
+    return new Task<T>(action)
   }
 
   /**
    * @description push a task to the queue with will be executed asynchronously in the background
    */
-  push(item: Item) {
-    this.queue.push(item)
+  push(task: Task) {
+    this.queue.push(task)
     this.ee.emit(Events.PROCESS)
   }
 
   /**
-   * @description push a task to the queue with will be executed asynchronously and return a result of execution
+   * @description push a task to the queue with will be executed asynchronously and return a result of the execution
    */
-  pushAndWait<T>(item: Item<T>) {
-    type Result = Awaited<ReturnType<typeof item['action']>>
+  pushAndWait<T>(task: Task<T>) {
+    type Result = Awaited<ReturnType<typeof task['action']>>
     return new Promise<Result>((resolve, reject) => {
-      item.executor = { resolve, reject }
-      this.queue.push(item)
+      task.executor = { resolve, reject }
+      this.queue.push(task)
       this.ee.emit(Events.PROCESS)
     })
   }

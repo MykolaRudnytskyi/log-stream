@@ -1,9 +1,9 @@
-import { Item } from './item'
 import { Queue } from './queue'
+import { Task } from './task'
 
 describe(Queue, () => {
   const queue = new Queue()
-  let item: Item
+  let task: Task
 
   const action = async () => {
     return 'test'
@@ -13,14 +13,14 @@ describe(Queue, () => {
     expect(queue).toBeDefined()
   })
 
-  test('queue should wrap action into Item', () => {
-    expect(item).toBeUndefined()
-    item = Queue.wrapToItem(action)
-    expect(item instanceof Item).toBeTruthy()
+  test('queue should wrap action into Task', () => {
+    expect(task).toBeUndefined()
+    task = Queue.wrapActionIntoTask(action)
+    expect(task instanceof Task).toBeTruthy()
   })
 
   test('queue.push should return void', () => {
-    expect(queue.push(item)).toBeUndefined()
+    expect(queue.push(task)).toBeUndefined()
   })
 
   test('queue.push should iterate value', (done) => {
@@ -31,11 +31,11 @@ describe(Queue, () => {
     expect(value).toBe(1)
     expect(iterate(1)).toBe(2)
 
-    const item = Queue.wrapToItem(async () => {
+    const task = Queue.wrapActionIntoTask(async () => {
       value = iterate(value)
       done()
     })
-    queue.push(item)
+    queue.push(task)
 
     expect(value).toBe(2)
   })
@@ -43,7 +43,7 @@ describe(Queue, () => {
   test('queue.push should throw an error in background', (done) => {
     const err = new Error('test')
     const spy = jest.fn()
-    const item = Queue.wrapToItem(async () => {
+    const task = Queue.wrapActionIntoTask(async () => {
       try {
         throw err
       } catch (e) {
@@ -53,19 +53,19 @@ describe(Queue, () => {
         done()
       }
     })
-    expect(queue.push(item)).toBeUndefined()
+    expect(queue.push(task)).toBeUndefined()
     expect(spy).toBeCalled()
   })
 
   test('queue.pushAndWait should return string "test"', () => {
-    expect(queue.pushAndWait(item)).resolves.toBe('test')
+    expect(queue.pushAndWait(task)).resolves.toBe('test')
   })
 
   test('queue.pushAndWait should rethrow an error', () => {
     const err = new Error('test')
-    const item = Queue.wrapToItem(async () => {
+    const task = Queue.wrapActionIntoTask(async () => {
       throw err
     })
-    expect(queue.pushAndWait(item)).rejects.toBe(err)
+    expect(queue.pushAndWait(task)).rejects.toBe(err)
   })
 })
