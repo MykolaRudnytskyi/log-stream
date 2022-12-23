@@ -39,11 +39,17 @@ export class Queue {
     return new Item<T>(action)
   }
 
+  /**
+   * @description push a task to the queue with will be executed asynchronously in the background
+   */
   push(item: Item) {
     this.queue.push(item)
     this.ee.emit(Events.PROCESS)
   }
 
+  /**
+   * @description push a task to the queue with will be executed asynchronously and return a result of execution
+   */
   pushAndWait<T>(item: Item<T>) {
     type Result = Awaited<ReturnType<typeof item['action']>>
     return new Promise<Result>((resolve, reject) => {
