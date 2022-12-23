@@ -10,17 +10,17 @@ export class CollectorResolver {
 
   // Added temporarily to fix "GraphQLError: Query root type must be provided."
   // TODO please, remove this when some "feature" query is added
-  @Query(() => Boolean, {
+  @Query(/* istanbul ignore next */ () => Boolean, {
     deprecationReason: 'to be removed',
   })
   root() {
     return true
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(/* istanbul ignore next */ () => Boolean)
   collectLog(
-    @Args('data', { type: () => GraphQLJSONObject }) data: JSONObject,
-    @Args('options', { type: () => CollctOptionsInput }) { logSeverity }: CollctOptionsInput,
+    @Args('data', { type: /* istanbul ignore next */ () => GraphQLJSONObject }) data: JSONObject,
+    @Args('options', { type: /* istanbul ignore next */ () => CollctOptionsInput }) { logSeverity }: CollctOptionsInput,
   ): boolean | Promise<boolean> {
     return this.collectorService.push(data, logSeverity, new Date())
   }
